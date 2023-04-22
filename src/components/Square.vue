@@ -16,13 +16,13 @@ const emit = defineEmits(['on-click-square'])
 /* Define the square */
 .square {
   background-color: #ffffff;
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 100px;
   border: 2px solid #000000;
-  font-size: 24px;
+  font-size: 48px;
   font-weight: bold;
   text-align: center;
-  line-height: 50px;
+  line-height: 100px;
   cursor: pointer;
 }
 
