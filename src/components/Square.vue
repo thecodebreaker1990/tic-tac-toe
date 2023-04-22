@@ -13,16 +13,26 @@ const emit = defineEmits(['on-click-square'])
 </template>
 
 <style scoped>
+/* Define the square */
 .square {
-  height: 50px;
+  background-color: #ffffff;
   width: 50px;
-  float: left;
-  border: solid 1px #999;
-  background-color: #fff;
+  height: 50px;
+  border: 2px solid #000000;
   font-size: 24px;
   font-weight: bold;
-  padding: 0;
   text-align: center;
-  margin: -1px -1px 0 0;
+  line-height: 50px;
+  cursor: pointer;
+}
+
+/* Define the hover effect */
+.square:hover {
+  background-color: #eeeeee;
+}
+
+/* Define the active state */
+.square.active {
+  background-color: #cccccc;
 }
 </style>
