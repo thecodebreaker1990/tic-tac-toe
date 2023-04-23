@@ -56,7 +56,7 @@ watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
 </script>
 
 <template>
-  <p class="status">{{ status }}</p>
+  <!-- <p class="status">{{ status }}</p> -->
   <div class="board">
     <Square v-for="i in 9" :key="i" :value="squares[i - 1]" @on-click-square="setSquares(i - 1)" />
   </div>
@@ -67,10 +67,11 @@ watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
   justify-items: center;
   align-items: center;
-  width: 300px;
-  height: 300px;
+  /* width: 300px;
+  height: 300px; */
 }
 .status {
   font-size: 16px;
