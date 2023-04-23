@@ -1,29 +1,40 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   value: {
     type: String,
     default: ''
   }
 })
+
 const emit = defineEmits(['on-click-square'])
+
+const iconId = computed(() => {
+  if (!props.value) return null
+  else return props.value === 'X' ? 'fa-solid fa-xmark' : 'fa-regular fa-circle'
+})
 </script>
 
 <template>
-  <button class="square" @click="emit('on-click-square')">{{ value }}</button>
+  <button class="square" @click="emit('on-click-square')">
+    <font-awesome-icon v-if="value" :icon="iconId" />
+  </button>
 </template>
 
 <style scoped>
 /* Define the square */
 .square {
   background-color: #ffffff;
+  color: #56baed;
   width: 100px;
   height: 100px;
-  border: 2px solid #000000;
   font-size: 48px;
-  font-weight: bold;
   text-align: center;
   line-height: 100px;
   cursor: pointer;
+  border-radius: 5px;
+  border-color: #ffffff;
 }
 
 /* Define the hover effect */
