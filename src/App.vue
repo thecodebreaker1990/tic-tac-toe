@@ -1,8 +1,9 @@
 <script setup>
 import Board from './components/Board.vue'
+import InputContentEditable from './components/InputContentEditable.vue'
 </script>
 
 <template>
-  <!-- <h1>Tic tac toe</h1> -->
-  <Board />
+  <!-- <Board /> -->
+  <InputContentEditable />
 </template>
