@@ -27,14 +27,15 @@ const iconId = computed(() => {
 .square {
   background-color: #ffffff;
   color: #56baed;
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  height: 100%;
   font-size: 48px;
   text-align: center;
-  line-height: 100px;
   cursor: pointer;
   border-radius: 5px;
-  border-color: #ffffff;
+  border: none;
+  outline: none;
+  transition: background-color 0.3s ease-out;
 }
 
 /* Define the hover effect */

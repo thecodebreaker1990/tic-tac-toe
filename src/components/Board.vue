@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import Square from './Square.vue'
+import PlayerTurnIndicator from './PlayerTurnIndicator.vue'
 
 const squares = ref(Array(9).fill(null))
 const xIsNext = ref(true)
@@ -56,7 +57,7 @@ watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
 </script>
 
 <template>
-  <!-- <p class="status">{{ status }}</p> -->
+  <PlayerTurnIndicator :is-x-turn="xIsNext" />
   <div class="board">
     <Square v-for="i in 9" :key="i" :value="squares[i - 1]" @on-click-square="setSquares(i - 1)" />
   </div>
@@ -65,13 +66,11 @@ watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
 <style scoped>
 .board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
   gap: 2px;
   justify-items: center;
   align-items: center;
-  /* width: 300px;
-  height: 300px; */
 }
 .status {
   font-size: 16px;
