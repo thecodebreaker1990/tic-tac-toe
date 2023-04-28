@@ -2,53 +2,64 @@
 import { ref, onMounted } from 'vue'
 
 function highlightDynamicPath() {
-  const text = contentEditableDiv.value.innerHTML
-
-  const textNode = contentEditableDiv.value.childNodes[0]
-
+  const text = contentEditableDiv.value.textContent
   const dynamicPaths = text.match(dynamicPathRegex)
 
   if (dynamicPaths) {
+    let highlightedText = text
+    const sel = window.getSelection()
+    let caretPos = sel.focusOffset
+
     for (let i = 0; i < dynamicPaths.length; i++) {
       const dynamicPath = dynamicPaths[i]
-      const startIndex = text.indexOf(dynamicPath)
+      const startIndex = highlightedText.indexOf(dynamicPath)
       const endIndex = startIndex + dynamicPath.length
 
-      //Create a range
-      const range = document.createRange()
-      range.setStart(textNode, startIndex) // Start at first character
-      range.setEnd(textNode, endIndex) // End at fifth character
+      const id = `${startIndex}-${endIndex}`
+      const highlightedContent = createHighlightedContent(dynamicPath, id)
 
-      //Create a new wrapper parent
-      const newParent = document.createElement('span')
-      newParent.className = 'highlight'
-      newParent.id = `highlight-${startIndex}-${endIndex}`
+      highlightedText =
+        highlightedText.slice(0, startIndex) + highlightedContent + highlightedText.slice(endIndex)
+      if (caretPos >= endIndex) {
+        caretPos += highlightedContent.length - dynamicPath.length
+      }
+    }
+    contentEditableDiv.value.innerHTML = highlightedText
 
-      range.surroundContents(newParent)
+    if (sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0)
+      const newOffset = range.startOffset + caretPos - sel.focusOffset
+      range.setStart(range.startContainer, newOffset)
+      range.setEnd(range.startContainer, newOffset)
+      sel.removeAllRanges()
+      sel.addRange(range)
     }
   }
 }
 
-function restoreCaret() {
-  if (!editableTextContent.value) return
-
-  const selection = window.getSelection()
-  //if (selection.rangeCount === 0) return
-
-  const range = selection.getRangeAt(0)
-  //if (!editableTextContent.value.contains(range.startContainer)) return
-
-  console.log(selection, range)
-
-  //   const startOffset = range.startOffset
-  //   const newRange = document.createRange()
-
-  //   newRange.setStart(range.startContainer, startOffset)
-  //   newRange.setEnd(range.startContainer, startOffset)
-
-  //   selection.removeAllRanges()
-  //   selection.addRange(newRange)
+function createHighlightedContent(content, uniqueId) {
+  const id = `highlight-${uniqueId}`
+  return `<span class="highlight" id="${id}">${content}</span>`
 }
+
+// function restoreCaret() {
+//   if (!editableTextContent.value) return
+
+//   const selection = window.getSelection()
+//   //if (selection.rangeCount === 0) return
+
+//   const range = selection.getRangeAt(0)
+//   //if (!editableTextContent.value.contains(range.startContainer)) return
+
+//   //   const startOffset = range.startOffset
+//   //   const newRange = document.createRange()
+
+//   //   newRange.setStart(range.startContainer, startOffset)
+//   //   newRange.setEnd(range.startContainer, startOffset)
+
+//   //   selection.removeAllRanges()
+//   //   selection.addRange(newRange)
+// }
 
 function onInputChange() {
   editableTextContent.value = contentEditableDiv.value.textContent
@@ -74,7 +85,6 @@ onMounted(() => {
       class="input"
       :contenteditable="isEditable"
       @input="onInputChange"
-      @blur="restoreCaret"
     ></div>
     <button @click="highlightDynamicPath">Highlight Text</button>
   </div>
@@ -88,9 +98,10 @@ onMounted(() => {
   border-radius: 6px;
   padding: 10px;
   width: 500px;
-  height: 45px;
+  max-height: 200px;
   font-size: 14px;
   margin: 16px 0;
+  overflow-y: auto;
 }
 .input:focus {
   outline: none;
@@ -105,8 +116,4 @@ onMounted(() => {
   padding: 2px 4px;
   /* caret-color: red; */
 }
-/* [contenteditable]:not(.highlight)::selection {
-  background-color: transparent;
-  caret-color: auto;
-} */
 </style>
