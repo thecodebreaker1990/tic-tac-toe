@@ -1,5 +1,8 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+
+import openaiConfig from '../helpers/openaiconfig'
+
 import Square from './Square.vue'
 import PlayerTurnIndicator from './PlayerTurnIndicator.vue'
 
@@ -7,6 +10,7 @@ const squares = ref(Array(9).fill(null))
 const xIsNext = ref(true)
 const status = ref('')
 const isGameOver = ref(false)
+const openai = openaiConfig.get()
 
 function setSquares(index) {
   if (squares.value[index] || isGameOver.value) return
@@ -52,6 +56,11 @@ function checkWinnerAndUpdateStatus(squares) {
     status.value = `Next Player : ${xIsNext.value ? 'X' : 'O'}`
   }
 }
+
+onMounted(async () => {
+  const response = await openai.listEngines()
+  console.log(response)
+})
 
 watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
 </script>
