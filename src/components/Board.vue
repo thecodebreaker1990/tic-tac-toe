@@ -1,16 +1,12 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-
-import openaiConfig from '../helpers/openaiconfig'
+import { ref, watch } from 'vue'
 
 import Square from './Square.vue'
 import PlayerTurnIndicator from './PlayerTurnIndicator.vue'
 
 const squares = ref(Array(9).fill(null))
 const xIsNext = ref(true)
-const status = ref('')
 const isGameOver = ref(false)
-const openai = openaiConfig.get()
 
 function setSquares(index) {
   if (squares.value[index] || isGameOver.value) return
@@ -47,20 +43,57 @@ function calculateWinner(squares) {
   return null
 }
 
-function checkWinnerAndUpdateStatus(squares) {
-  const winner = calculateWinner(squares)
-  if (winner) {
-    status.value = `${winner} has won!`
-    isGameOver.value = true
-  } else {
-    status.value = `Next Player : ${xIsNext.value ? 'X' : 'O'}`
+function handleComputerTurn() {
+  let clonedSquares = squares.value.slice()
+
+  //Check if computer can win in the next turn
+  for (let i = 0; i < clonedSquares.length; i++) {
+    if (!clonedSquares[i]) {
+      clonedSquares[i] = 'O'
+      if (calculateWinner(clonedSquares) === 'O') {
+        setSquares(i)
+        return
+      }
+      clonedSquares[i] = null
+    }
   }
+
+  //Check if user can win in the next turn, then block that move
+  for (let i = 0; i < clonedSquares.length; i++) {
+    if (!clonedSquares[i]) {
+      clonedSquares[i] = 'X'
+      if (calculateWinner(clonedSquares) === 'X') {
+        setSquares(i)
+        return
+      }
+      clonedSquares[i] = null
+    }
+  }
+
+  // If no winning move is available, choose a random available space
+  const center = [4]
+  const diagonals = [0, 2, 6, 8]
+  const prioritySpaces = diagonals.concat(center)
+  for (let i = 0; i < prioritySpaces.length; i++) {
+    if (!clonedSquares[i]) {
+      setSquares(i)
+      return
+    }
+  }
+
+  const availableSpaces = clonedSquares.filter((square) => square)
+  const randomIndex = Math.floor(Math.random() * availableSpaces.length)
+  setSquares(availableSpaces[randomIndex])
 }
 
-onMounted(async () => {
-  const response = await openai.listEngines()
-  console.log(response)
-})
+function checkWinnerAndUpdateStatus(squares) {
+  const winner = calculateWinner(squares)
+  isGameOver.value = !!winner
+  if (!isGameOver.value && !xIsNext.value) {
+    //let computer take its turn
+    handleComputerTurn()
+  }
+}
 
 watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
 </script>
