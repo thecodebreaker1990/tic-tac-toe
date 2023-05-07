@@ -5,11 +5,10 @@ const emit = defineEmits(['on-start'])
 </script>
 
 <template>
-  <div class="welcome-container">
+  <div class="selection-box">
     <h3 class="header">Tic Tac Toe</h3>
-    <hr class="separator" />
-    <p>Select which you want to be?</p>
-    <div class="btn-container">
+    <p class="title">Select which you want to be?</p>
+    <div class="options">
       <BaseButton :is-primary="true" @click="emit('on-start', 'X')">Player (X)</BaseButton>
       <BaseButton :is-primary="true" @click="emit('on-start', 'O')">Player (O)</BaseButton>
     </div>
@@ -17,26 +16,28 @@ const emit = defineEmits(['on-start'])
 </template>
 
 <style scoped>
-.welcome-container {
+.selection-box {
   background-color: #ffffff;
   border-radius: 4px;
   padding: 20px;
 }
 .header {
-  font-size: 18px;
+  font-size: 30px;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: solid 1px lightgray;
+}
+.title {
+  font-size: 22px;
   font-weight: 500;
+  margin: 20px 0;
 }
-.separator {
+.options {
   width: 100%;
-  height: 1px;
-  margin: 10px 0;
-  background-color: #ccc;
-  border: none;
+  display: flex;
+  justify-content: space-between;
 }
-.btn-container {
-  margin-top: 10px;
-}
-.btn-container > button:not(:last-child) {
-  margin-right: 10px;
+.options > button {
+  width: 48%;
 }
 </style>

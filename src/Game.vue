@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue'
+import { sleep } from './helpers/utility'
 
-import Welcome from './components/Welcome.vue'
+import SelectBox from './components/SelectBox.vue'
 import Board from './components/Board.vue'
-import EndScreen from './components/EndScreen.vue'
+import ResultBox from './components/ResultBox.vue'
 
 function calculateWinner(squares) {
   const lines = [
@@ -27,7 +28,7 @@ function calculateWinner(squares) {
   return null
 }
 
-let userPlayer = 'X'
+let playerSign = 'X'
 const STATUS = {
   NOT_STARTED: 'notStarted',
   ON_GOING: 'onGoing',
@@ -37,16 +38,16 @@ const STATUS = {
 const gameStatus = ref(STATUS.NOT_STARTED)
 const squares = ref(Array(9).fill(null))
 const xIsNext = ref(true)
+const awaitingNextMove = ref(false)
+const resultText = ref('')
 
-const isGameOver = computed(() => gameStatus.value === STATUS.OVER)
-
-async function startGame(preferredPlayer) {
+async function startGame(preferredPlayerSign) {
   gameStatus.value = STATUS.ON_GOING
 
   await nextTick()
 
-  if (preferredPlayer != userPlayer) {
-    userPlayer = preferredPlayer
+  if (preferredPlayerSign != playerSign) {
+    playerSign = preferredPlayerSign
     setXIsNext(!xIsNext.value)
   }
 }
@@ -64,13 +65,13 @@ function setXIsNext(value) {
 
 function handleComputerTurn() {
   let clonedSquares = squares.value.slice()
-  const computerPlayer = userPlayer == 'X' ? 'O' : 'X'
+  const computerPlayerSign = playerSign == 'X' ? 'O' : 'X'
 
   //Check if computer can win in the next turn
   for (let i = 0; i < clonedSquares.length; i++) {
     if (!clonedSquares[i]) {
-      clonedSquares[i] = computerPlayer
-      if (calculateWinner(clonedSquares) === computerPlayer) {
+      clonedSquares[i] = computerPlayerSign
+      if (calculateWinner(clonedSquares) === computerPlayerSign) {
         setSquares(i)
         return
       }
@@ -81,8 +82,8 @@ function handleComputerTurn() {
   //Check if user can win in the next turn, then block that move
   for (let i = 0; i < clonedSquares.length; i++) {
     if (!clonedSquares[i]) {
-      clonedSquares[i] = userPlayer
-      if (calculateWinner(clonedSquares) === userPlayer) {
+      clonedSquares[i] = playerSign
+      if (calculateWinner(clonedSquares) === playerSign) {
         setSquares(i)
         return
       }
@@ -106,31 +107,60 @@ function handleComputerTurn() {
   setSquares(availableSpaces[randomIndex])
 }
 
-function checkWinnerAndUpdateStatus(squares) {
+async function setRandomTimeDelay() {
+  //Block the user move by disabling the board
+  awaitingNextMove.value = true
+
+  //set a random time delay
+  const randomTimeDelay = (Math.random() * 1000 + 200).toFixed()
+  await sleep(randomTimeDelay)
+
+  //Unblock user and allow to take next turn
+  awaitingNextMove.value = false
+}
+
+async function checkGameStatus(squares) {
   const winner = calculateWinner(squares)
-  if (winner) {
+  const isMatchDrawn = squares.every((el) => el != null)
+
+  if (winner || isMatchDrawn) {
+    await setRandomTimeDelay()
+
+    if (winner) resultText.value = `Player ${winner} has won the game!`
+    else if (!winner && isMatchDrawn) resultText.value = 'Match has been drawn!'
+
     gameStatus.value = STATUS.OVER
+
     return
   }
+
   const isNextComputerTurn =
-    (userPlayer == 'X' && !xIsNext.value) || (userPlayer != 'X' && xIsNext.value)
-  if (!isGameOver.value && isNextComputerTurn) {
+    (playerSign == 'X' && !xIsNext.value) || (playerSign != 'X' && xIsNext.value)
+  if (isNextComputerTurn) {
+    await setRandomTimeDelay()
     //let computer take its turn
     handleComputerTurn()
   }
 }
 
-watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
+function restartGame() {
+  playerSign = 'X'
+  gameStatus.value = STATUS.NOT_STARTED
+  squares.value = Array(9).fill(null)
+  xIsNext.value = true
+  resultText.value = ''
+}
+
+watch(squares, checkGameStatus, { immediate: true })
 </script>
 
 <template>
-  <Welcome v-if="gameStatus == STATUS.NOT_STARTED" @on-start="startGame" />
+  <SelectBox v-if="gameStatus == STATUS.NOT_STARTED" @on-start="startGame" />
   <Board
     v-else-if="gameStatus == STATUS.ON_GOING"
     :squares="squares"
     :xIsNext="xIsNext"
-    :is-game-over="isGameOver"
     @on-play="setSquares"
   />
-  <EndScreen v-else />
+  <ResultBox v-else :text="resultText" @on-replay="restartGame" />
 </template>
