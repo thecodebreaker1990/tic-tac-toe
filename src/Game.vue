@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 import Welcome from './components/Welcome.vue'
 import Board from './components/Board.vue'
@@ -27,6 +27,7 @@ function calculateWinner(squares) {
   return null
 }
 
+let userPlayer = 'X'
 const STATUS = {
   NOT_STARTED: 'notStarted',
   ON_GOING: 'onGoing',
@@ -38,6 +39,17 @@ const squares = ref(Array(9).fill(null))
 const xIsNext = ref(true)
 
 const isGameOver = computed(() => gameStatus.value === STATUS.OVER)
+
+async function startGame(preferredPlayer) {
+  gameStatus.value = STATUS.ON_GOING
+
+  await nextTick()
+
+  if (preferredPlayer != userPlayer) {
+    userPlayer = preferredPlayer
+    setXIsNext(!xIsNext.value)
+  }
+}
 
 function setSquares(index) {
   const nextSquares = squares.value.slice()
@@ -52,12 +64,13 @@ function setXIsNext(value) {
 
 function handleComputerTurn() {
   let clonedSquares = squares.value.slice()
+  const computerPlayer = userPlayer == 'X' ? 'O' : 'X'
 
   //Check if computer can win in the next turn
   for (let i = 0; i < clonedSquares.length; i++) {
     if (!clonedSquares[i]) {
-      clonedSquares[i] = 'O'
-      if (calculateWinner(clonedSquares) === 'O') {
+      clonedSquares[i] = computerPlayer
+      if (calculateWinner(clonedSquares) === computerPlayer) {
         setSquares(i)
         return
       }
@@ -68,8 +81,8 @@ function handleComputerTurn() {
   //Check if user can win in the next turn, then block that move
   for (let i = 0; i < clonedSquares.length; i++) {
     if (!clonedSquares[i]) {
-      clonedSquares[i] = 'X'
-      if (calculateWinner(clonedSquares) === 'X') {
+      clonedSquares[i] = userPlayer
+      if (calculateWinner(clonedSquares) === userPlayer) {
         setSquares(i)
         return
       }
@@ -97,8 +110,11 @@ function checkWinnerAndUpdateStatus(squares) {
   const winner = calculateWinner(squares)
   if (winner) {
     gameStatus.value = STATUS.OVER
+    return
   }
-  if (!isGameOver.value && !xIsNext.value) {
+  const isNextComputerTurn =
+    (userPlayer == 'X' && !xIsNext.value) || (userPlayer != 'X' && xIsNext.value)
+  if (!isGameOver.value && isNextComputerTurn) {
     //let computer take its turn
     handleComputerTurn()
   }
@@ -108,7 +124,7 @@ watch(squares, checkWinnerAndUpdateStatus, { immediate: true })
 </script>
 
 <template>
-  <Welcome v-if="gameStatus == STATUS.NOT_STARTED" @on-start="gameStatus = STATUS.ON_GOING" />
+  <Welcome v-if="gameStatus == STATUS.NOT_STARTED" @on-start="startGame" />
   <Board
     v-else-if="gameStatus == STATUS.ON_GOING"
     :squares="squares"
