@@ -1,8 +1,7 @@
 <script setup>
-import Board from './components/Board.vue'
+import Game from './Game.vue'
 </script>
 
 <template>
-  <!-- <h1>Tic tac toe</h1> -->
-  <Board />
+  <Game />
 </template>
