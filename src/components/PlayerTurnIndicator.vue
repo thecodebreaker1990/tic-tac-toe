@@ -1,4 +1,6 @@
 <script setup>
+import BaseButton from './BaseButton.vue'
+
 defineProps({
   isXTurn: {
     type: Boolean,
@@ -11,16 +13,14 @@ const players = ['X', 'O']
 
 <template>
   <div class="indicator-container">
-    <div
+    <BaseButton
       v-for="player in players"
       :key="player"
-      :class="[
-        'indicator-item',
-        { active: (isXTurn && player === 'X') || (!isXTurn && player === 'O') }
-      ]"
+      class="indicator-item"
+      :is-primary="(isXTurn && player === 'X') || (!isXTurn && player === 'O')"
     >
       {{ player }}'s Turn
-    </div>
+    </BaseButton>
   </div>
 </template>
 
@@ -36,20 +36,5 @@ const players = ['X', 'O']
 }
 .indicator-container > .indicator-item {
   flex: 1 0;
-}
-.indicator-item {
-  padding: 10px 16px;
-  border-radius: 4px;
-  background-color: var(--color-background);
-  color: #56baed;
-  text-align: center;
-  border: solid 1px var(--color-background);
-  outline: none;
-  transition: all 0.3s ease-out;
-}
-.indicator-item.active {
-  background-color: #56baed;
-  color: var(--vt-c-white);
-  border-color: #56baed;
 }
 </style>
